@@ -1,0 +1,101 @@
+"""This module constains the class Terminal in charge of input and output"""
+
+from os import name as os_name, system
+from random import choices
+
+from colorama import init, Fore
+
+from ..data.datamanager import DataManager
+from ..helper.helper import cprint
+from ..settings import CATEGORIES
+
+
+class Terminal:
+    """This class manage the communication with the user"""
+
+    def __init__(self):
+        self.db = DataManager()
+        self.os_type = os_name
+
+    def run(self):
+        """This method is the main loop of the application"""
+        # for color in window console
+        init(autoreset=True)
+
+        while True:
+            self._clear_console()
+            self._main_menu()
+            choice = self._ask_choice(('1', '2', 'q'))
+            # print(choice)
+            if choice == 'q' or choice == 'Q':
+                cprint(' A bientôt.', 'green')
+                break
+            elif choice == '1':
+                self._clear_console()
+                self._display_categories()
+                valid_choice = [str(choice) for choice in range(1,len(CATEGORIES)+1)]
+                valid_choice.append('q')
+                category_choice = self._ask_choice(valid_choice)
+                if category_choice != 'q':
+                    category = CATEGORIES[int(category_choice)-1]
+                    print('vous avez choisi', category)
+                    self._display_aliments(category)
+                break            
+            
+    
+    def _clear_console(self):
+        """This method clear the console"""
+        if self.os_type == 'nt':
+            system('cls')
+        else:
+            system('clear')
+
+    def _main_menu(self):
+        frame = "=" * 20
+        msg = frame + " Bienvenue dans l'application Pur Beurre. " + frame
+        cprint(msg, 'violet')
+
+        msg = '\n Veuillez choisir une option et appuyez sur Entrée.'        
+        print(Fore.LIGHTCYAN_EX + msg)        
+        print('')
+
+        msg = """ 1 = Choisir un aliment à remplacer.
+ 2 = Retrouver mes aliments substitués. 
+        """
+        print(msg)
+
+    def _ask_choice(self, valid_choice):
+        # print(valid_choice)
+        while True:
+            # answer = input(' \x1b[1;33;40mEntrez votre choix (Q pour quitter) \x1b[1;37;40m : ')            
+            answer = input(Fore.GREEN + ' Entrez votre choix (Q pour quitter) : ')            
+            if answer in valid_choice:
+                break
+            else:
+                cprint(" Ce choix n'est pas une option valide", 'red')            
+                
+        return answer
+        
+    def _display_categories(self):
+        msg = '\n Veuillez choisir une catégorie et appuyez sur Entrée'
+        print(Fore.CYAN + msg)
+        print('')
+        i = 1
+        for category in CATEGORIES:            
+            print(f' {i} = {category}')
+            i += 1
+        print('')
+
+    def _display_aliments(self, category):
+        msg = '\n Veuillez choisir un aliment et appuyez sur Entrée'
+        print(Fore.CYAN + msg)
+        print('')
+
+        all_aliments = self.db.get_aliments_from_category(category)
+        aliments = choices(all_aliments, k=10)
+        
+        i = 1
+        for aliment in aliments:
+            print(f' {i} = {aliment.name}, {aliment.nutrition_score}')
+            i += 1
+        

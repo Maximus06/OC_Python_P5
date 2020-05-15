@@ -12,15 +12,15 @@ DATABASE = {
 # The categories of food
 CATEGORIES = [
     "Biscuits et gâteaux",    
-    # "Plats préparés",    
-    # "Boissons aux fruits",
-    # "Entrées",    
-    # "Chocolats",
-    # "Desserts",
-    # "Produits laitiers",
-    # "Yaourts",
-    # "Pains",
-    # "Céréales pour petit-déjeuner",
+    "Plats préparés",    
+    "Boissons aux fruits",
+    "Entrées",    
+    "Chocolats",
+    "Desserts",
+    "Produits laitiers",
+    "Yaourts",
+    "Pains",
+    "Céréales pour petit-déjeuner",
     ]
 
 # Number of aliment to get by category

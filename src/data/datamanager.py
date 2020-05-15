@@ -85,3 +85,11 @@ class DataManager:
         store = self.session.query(Store).filter(
             Store.name == name).first()
         return store
+
+    def get_aliments_from_category(self, category):
+        """Return a list of Aliment from the arg category"""
+        
+        aliments = self.session.query(Aliment).\
+            filter(Aliment.categories.any(name=category)).all()
+        
+        return aliments
