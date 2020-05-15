@@ -1,142 +1,204 @@
-"""This module is responsible to get the records from openfoodfact api"""
-
-# https://docs.sqlalchemy.org/en/13/orm/tutorial.html
-# https://auth0.com/blog/sqlalchemy-orm-tutorial-for-python-developers/
-https://docs.sqlalchemy.org/en/13/orm/basic_relationships.html#relationship-patterns
+"""This module contains the class responsible to get the records
+from openfoodfact api
+"""
+from colorama import init
 
 import requests
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 
-from .. models.aliment import Aliment
-from .. models.store import Store
+from ..settings import DATABASE, CATEGORIES, ALIMENT_BY_CATEGORY,\
+                       DUMMY_PRODUCTS
+from ..models.aliment import Aliment
+from ..models.store import Store
+from ..models.category import Category
+from .. data.datamanager import DataManager
 
-categories = [
-    "Biscuits et gâteaux",
-    "Plats préparés",
-    # "Boissons chaudes",
-    # "Boissons aux fruits",
-    # "Entrées",
-    # "Plats préparés",
-    # "Desserts",
-    # "Produits laitiers",
-    # "Yaourts",
-    # "Pains",
-    # "Céréales pour petit-déjeuner",
-    ]
+class Openfood:
+    """This class is in charge of communication with the openfoodfacts api."""
 
-def get_food_by_category(categories, number_of_food=10):
-    """get food for each category in the categories list
+    def __init__(self, aliment_number=100):
+        # self.categories = CATEGORIES
+        self.aliment_number = aliment_number
+        self.url = self._get_url()
+        self.aliments = []
+        self.stores = set()
     
-    args:
-        - categories: list of categories
-        - number_of_food: the int number of food to get 
-    """
-    url_base = "https://fr.openfoodfacts.org/cgi/search.pl?action=process"
-    sort_by = "&sort_by=unique_scans_n"
-    record_number = f"&page_size={number_of_food}&page=1"
-    file_format = "&json=true"
-    fields = "&fields=product_name,stores,nutrition_grade_fr,url,code,nova_group, \
-        stores_tag"
-    criteria_complete = "&tagtype_0=states&tag_contains_0=contains&tag_0=complete"
-    
+    def _get_url(self):
+        """This method returns the full url with parameters for the api"""
 
-    url = url_base + sort_by + record_number + file_format + fields + criteria_complete
+        url_base = "https://fr.openfoodfacts.org/cgi/search.pl?action=process"
+        sort_by = "&sort_by=unique_scans_n"
+        record_number = f"&page_size={self.aliment_number}&page=1"
+        file_format = "&json=true"
+        fields = "&fields=product_name,stores,nutrition_grade_fr,url,code,nova_group, \
+            stores_tag,brands,generic_name"
+        criteria_complete = "&tagtype_0=states&tag_contains_0=contains&tag_0=complete"
 
-    for category in categories:
-        # request the aliment for this category
-        url_with_category = url + f"&tagtype_1=categories&tag_contains_1=contains&tag_1={category}"
-        print(f'\nUrl: {url_with_category}')
-        result = requests.get(url_with_category)
+        return url_base + sort_by + record_number + file_format + fields + criteria_complete
 
-        if result.ok == False:
-            print(f"The error {result.reason} occurs with status code {result.status_code}")
-            #TODO raise error
-            return None        
+    def get_food_by_category(self, categories):
+        """get food for each category in the categories list
         
-        food = result.json()
-        aliments, all_stores = get_aliments_from_dico(food, category)
+        args:
+            - categories: list of Category objects            
+        """    
 
-        # for store in all_stores:
-        #     print('\n*************************************************')
-        #     print(f'Magasin: {store.name}')
+        # all_stores = set()
+        # all_aliments = []
 
-        save_food(aliments)
+        for category in categories:
+            # request the aliment for this category
+            url_with_category = self.url + \
+                f"&tagtype_1=categories&tag_contains_1=contains&tag_1={category.name}"
+            # print(f'\nUrl: {url_with_category}')
+            result = requests.get(url_with_category)
 
-def get_aliments_from_dico(food, category):
-    # list of aliments object for this category
-    aliments=[]
+            if result.ok == False:
+                print(f"The error {result.reason} occurs with status code {result.status_code}")
+                #TODO raise error
+                return None        
+            
+            food = result.json()
 
-    print(f'\nTraitement de la catégorie : {category}')    
-    products = food.get('products') 
+            self.get_aliments_from_dico(food, category)
 
-    all_stores = []   
-    
-    # parcours de la liste de dictionnaire d'aliments
-    for product in products:
-        name = product.get('product_name')
-        score = product.get('nutrition_grade_fr')
-        if score == None:
-            print(f'\n*******************************')
-            print(f'{name} ne possède pas de score')
-            continue
-        else:
-            score = score.strip()
-        nova = product.get('nova_group')        
-        url = product.get('url')
+            # aliments, category_stores = self.get_aliments_from_dico(food, category)
+            # Cumul the stores
+            # all_stores = all_stores.union(category_stores)
+            # Cumul the aliments
+            # all_aliments.extend(aliments)
 
-        string =  product.get('stores')        
-        print(f'\nSTRING stores = {string}\n')
-        #special case like Intermarchė
-        if 'ė' in string:
-            print(f'ALARM ė TROUVE dans {string}')
-            string = string.replace('ė', 'é')
-            print(f'apres remplacement: {string}')
+        # return all_aliments, all_stores
+        return self.aliments, self.stores
 
-        stores_str = string.rsplit(',')
+    def get_aliments_from_dico(self, food, category):
+        """Create a list of Aliment object from the dictionnary"""
 
-        stores = []
-        #creation des objets store
-        for string in stores_str:
-            stores.append(Store(string))
-        all_stores.extend(stores)
-        print(f'*** Objets store: {stores} ***')
+        # list of aliments object for this category
+        # aliments=[]
 
-        # print(f"\n****Stores: {stores} ****")
-        # print(f"Name: {name} - Stores: {stores}")
-        # print(f"Score: {score} - Nova: {nova}")
-        # print(f"Url: {url}\n")
+        print(f'\nTraitement de la catégorie :\33[35m {category}\33[0m')    
+        products = food.get('products')
+
+        # all_stores = set()
         
-        aliment = Aliment(name=name, score=score, url=url, nova=nova, stores=stores)
-        # aliment = Aliment(name=name, score=score, url=url, nova=nova)
-        aliments.append(aliment)
-        print(f'Un objet aliment: {aliment}')    
-    
-    
-    return aliments, all_stores
+        # parcours de la liste de dictionnaire d'aliments
+        for product in products:
+            name = product.get('product_name')
+            code = product.get('code')
+            description = product.get('generic_name')
+            print(f'name: {name} - description: {description}')
+            if name in DUMMY_PRODUCTS:
+            # ignore dummy products
+                continue
 
+            score = product.get('nutrition_grade_fr')
+            if score == None:
+                # ignore the product without score
+                continue
+            else:
+                score = score.strip()
+            nova = product.get('nova_group')        
+            url = product.get('url')
 
-def save_food(aliments):
-    engine = create_engine('mysql://maximus:decimus@localhost/openfood')
-    Session = sessionmaker(bind=engine)
-    # Base = declarative_base()
+            # Stores
+            string  =  product.get('stores')        
+            # print(f'\nSTRING stores = {string}\n')
+            
+            if string:
+                stores_set = self._clean_stores(string)                
+                # cumul the stores for this aliment in the stores set for all
+                # all_stores = all_stores.union(stores_set)
+                self.stores = self.stores.union(stores_set)
+            
+            # categories = [self.get_obj_category(category)]
+            categories = [category]
+            
+            # brands = product.get('brands').encode('utf8')
+            brands = product.get('brands')            
+            if 'ė' in  brands:
+                print(f'BRAND avt replace = {brands}')
+                print(f"BRAND encoded = {brands.encode('utf8')}")
+                brands = brands.replace('ė', 'é')
+                print('\33[31m' +'ė have been replaced' + '\33[0m')
+            
+            aliment = Aliment(name=name, description=description, score=score,
+                url=url, nova=nova, brands=brands, stores=list(stores_set),
+                categories=categories, code_bar=code)
+            
+            if aliment not in self.aliments:
+                self.aliments.append(aliment)            
+        
+        # return aliments, all_stores
 
-    # 3 - create a new session
-    session = Session()
-    session.add_all(aliments)
-    session.commit()
-    session.close()
+    def get_obj_category(self, name):    
+        """Return a Category object from the database"""    
+        category = self.session.query(Category).filter(
+            Category.name == name).first()
 
+        return category
 
-    
+    def _clean_stores(self, string_stores):
+        """Return a set of store from a list with cleaned data:
+            - Clean exotic caractere
+            - clean space
+            - Capitalize
+            - clean doublon
+        """
 
+        # A strange caractere 'ė' (Intermachė) crash sqlAlchemy
+        # so we replace it by é
+        string_stores = string_stores.replace('Дикси', 'Auchan')
+        string_stores = string_stores.lower()
+        string_stores = string_stores.replace('ė', 'é')
+        string_stores = string_stores.replace('elclerc', 'Leclerc')
+        string_stores = string_stores.replace('centre leclerc', 'Leclerc')
+        string_stores = string_stores.replace('e.leclerc', 'Leclerc')
+        string_stores = string_stores.replace('e leclerc', 'Leclerc')
+        string_stores = string_stores.replace('intermarche', 'Intermarché')
+        string_stores = string_stores.replace('intermaché', 'Intermarché')
+        string_stores = string_stores.replace('b i1', 'Bi1')
+        string_stores = string_stores.replace('cœur', 'coeur')
+        string_stores = string_stores.replace('superu carrefour contact carrefour intermarché superu',
+            'Super U, Carrefour, Intermarché')
 
-def get_food_from_api():
-    pass
+        # make a list from str
+        brut_store = string_stores.split(',')    
+
+        # delete the space, lower and capitalize the store
+        clean_store = map(lambda store: store.strip().lower().capitalize(), brut_store)
+
+        # clean again some store
+        string_stores = string_stores.replace('Super u', 'Super U')
+        string_stores = string_stores.replace('Cora intermarché superu', 'Super U')
+        string_stores = string_stores.replace('Magasins u', 'Super U' )
+        string_stores = string_stores.replace('U', 'Super U')
+
+        #delete the doublon
+        set_store = set(clean_store)
+        
+        return set_store
 
 def main():
-    get_food_by_category(categories)
+    # for windows console color
+    init()
+
+    db = DataManager()
+    api = Openfood(ALIMENT_BY_CATEGORY)
+
+    # Create the categories in the database from the setting list
+    db.create_categories(CATEGORIES)
+
+    # get a list of Category object from the database
+    categories = db.get_categories()
+
+    # Get the aliments and stores from the api
+    aliments, stores = api.get_food_by_category(categories)
+
+    # Save stores and aliments in the database
+    db.save_stores(stores)
+    db.save_food(aliments)
 
 if __name__ == "__main__":
     main()
+        
+
