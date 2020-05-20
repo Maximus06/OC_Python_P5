@@ -1,6 +1,9 @@
 """This file contains the setting parameters and contants"""
 
 # Parameters for the connection with the database
+# mysqlclient
+# engine = create_engine(
+#     "mysql+mysqldb://scott:tiger@localhost/test?charset=utf8mb4&binary_prefix=true")
 DATABASE = {
     'dialect': 'mysql://',
     'user': 'maximus',

@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from ..settings import DATABASE, CATEGORIES, ALIMENT_BY_CATEGORY,\
                        DUMMY_PRODUCTS
 from ..models.base import Base
-from ..models.aliment import Aliment
+from ..models.aliment import Aliment, aliment_subtitute_relation
 from ..models.store import Store
 from ..models.category import Category
 
@@ -127,7 +127,11 @@ class DataManager:
     def get_saved_substitutes(self):
         """Return  a list of saved substitutes"""
 
-        substitutes = self.session.query()
+        # substitutes = self.session.query(aliment_subtitute_relation).all()
+        sql = 'SELECT * From v_aliment_substitute'
+        substitutes = self.engine.execute(sql)
+
+        return substitutes
 
     def save_substitute(self, aliment, substitute):
         """This method save the the substitute aliment

@@ -70,7 +70,7 @@ class Terminal:
         # print(valid_choice)
         while True:
             # answer = input(' \x1b[1;33;40mEntrez votre choix (Q pour quitter) \x1b[1;37;40m : ')            
-            answer = input(Fore.GREEN + ' Entrez votre choix (Q pour quitter) : ')            
+            answer = input(Fore.LIGHTCYAN_EX + ' Entrez votre choix (Q pour quitter) : ')            
             if answer in valid_choice:
                 break
             else:
@@ -110,6 +110,8 @@ class Terminal:
         if choice.lower() == 'q':
             return
 
+        self._clear_console()
+
         aliment = aliments[int(choice)-1]
         msg = (f"\n '{aliment.name}' de nutriscore {aliment.nutrition_score.upper()} peut "
              "être substitué avantageusement par l'aliment suivant:")
@@ -136,5 +138,41 @@ class Terminal:
         input('Appuyez sur Entrée')
         
     def _display_substitute(self):
+        """This method display the substitute aliment already saved"""
         substitutes = self.db.get_saved_substitutes()
+        # TODO message for None substitute yet.
+        
+        self._clear_console()
+        trait = '-' * 124
+
+        if substitutes.rowcount == 0:
+            print(Fore.YELLOW +  ' Aucun substitut enregistré n\'a été trouvé')
+            print('')
+            input(Fore.LIGHTCYAN_EX + ' Appuyez sur Entrée pour revenir au menu')
+            return None
+
+        print('')
+        msg = ("Liste des aliments que vous avez déjà remplacés avec leurs" 
+            f" substituts. Total : {substitutes.rowcount}")
+
+        print(Fore.MAGENTA + msg)
+        print('')
+
+        print(trait)
+        align_text = "|{:^4}|{:^50}|{:^7}|{:^50}|{:^7}|"
+        print(align_text.format('N°', 'Aliments remplacés','score','substituts', 'score'))
+        print(trait)
+
+        i = 1
+        for sub in substitutes:
+            aliment = sub[1]
+            # print(len(aliment))
+            record = f"| {i} = {aliment:<50} {sub[2].upper():^7} {sub[4]:<50} {sub[5].upper():^7}|"
+            print(record)
+            i = i+1
+
+        print(trait)
+
+        print('')
+        input(Fore.LIGHTCYAN_EX + ' Appuyez sur Entrée ')
         
