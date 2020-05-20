@@ -1,5 +1,7 @@
 """This module contains the DataManager Class"""
 
+from random import choice, choices
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,6 +13,7 @@ from ..models.base import Base
 from ..models.aliment import Aliment
 from ..models.store import Store
 from ..models.category import Category
+
 
 class DataManager:
     """This class is in charge of CRUD operations with the DataBase"""
@@ -46,6 +49,8 @@ class DataManager:
     def save_stores(self, stores):
         # create a list of Store object from the store set
         store_list = list(stores)
+        print(f'\nstore list: {store_list}')
+        
         obj_stores = [Store(store) for store in store_list]
         
         self.session.add_all(obj_stores)
@@ -89,7 +94,50 @@ class DataManager:
     def get_aliments_from_category(self, category):
         """Return a list of Aliment from the arg category"""
         
+        # aliments = self.session.query(Aliment).\
+        #     filter(Aliment.categories.any(name=category)).all()
+
         aliments = self.session.query(Aliment).\
-            filter(Aliment.categories.any(name=category)).all()
+            filter(Aliment.categories.any(name=category)).\
+            filter(Aliment.nutrition_score > 'a').\
+            all()
+
         
         return aliments
+
+    def get_substitute(self, category):
+        """Return an Aliment object with a A score
+        
+        args:
+            category: the category of the Aliment to substitute
+        """       
+
+        # query the aliment of this category with a A score
+        aliments = self.session.query(Aliment).\
+            filter(Aliment.categories.any(name=category)).\
+            filter(Aliment.nutrition_score=='a').\
+            all()
+
+        print(f'\nNombre de substition possible de score A: {len(aliments)}')
+
+        substitut = choice(aliments)        
+
+        return substitut
+
+    def get_saved_substitutes(self):
+        """Return  a list of saved substitutes"""
+
+        substitutes = self.session.query()
+
+    def save_substitute(self, aliment, substitute):
+        """This method save the the substitute aliment
+        
+        Arg:
+            - aliment : the Aliment object replaced
+            - subsitute : the Aliment object which is the substitute
+        """
+
+        # add the substitute to the aliment substitutes collection
+        aliment.substitutes.append(substitute)
+        self.session.commit()
+

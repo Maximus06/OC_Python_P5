@@ -6,7 +6,9 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 class Store(Base):
-    __tablename__ = 'stores'
+    """This class represents a store"""
+
+    __tablename__ = 'store'
 
     id = Column(Integer, primary_key=True)    
     name = Column(String(100), nullable=False)
@@ -14,8 +16,8 @@ class Store(Base):
 
     # aliments = relationship(
     #     "Aliment",
-    #     secondary=aliments_stores_relation,
-    #     back_populates="stores")
+    #     secondary=aliments_store_relation,
+    #     back_populates="store")
 
     def __init__(self, name):
         self.name = name    

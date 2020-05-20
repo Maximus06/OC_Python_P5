@@ -24,7 +24,7 @@ CATEGORIES = [
     ]
 
 # Number of aliment to get by category
-ALIMENT_BY_CATEGORY = 50
+ALIMENT_BY_CATEGORY = 100
 
 # a list of products to ignore (based on product name)
 DUMMY_PRODUCTS = [

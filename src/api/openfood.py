@@ -148,6 +148,7 @@ class Openfood:
         # A strange caractere 'ė' (Intermachė) crash sqlAlchemy
         # so we replace it by é
         string_stores = string_stores.replace('Дикси', 'Auchan')
+        string_stores = string_stores.replace('Оливье', 'Auchan')
         string_stores = string_stores.lower()
         string_stores = string_stores.replace('ė', 'é')
         string_stores = string_stores.replace('elclerc', 'Leclerc')

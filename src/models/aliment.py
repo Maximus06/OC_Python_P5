@@ -6,20 +6,27 @@ from sqlalchemy.orm import relationship
 
 from .base import Base
 
-# Relation table between aliments and stores
-aliments_stores_relation = Table('aliments_stores', Base.metadata,
-    Column('aliment_id', Integer, ForeignKey('aliments.id')),
-    Column('store_id', Integer, ForeignKey('stores.id'))
+# Relation table between aliment and store
+aliment_store_relation = Table('aliment_store', Base.metadata,
+    Column('aliment_id', Integer, ForeignKey('aliment.id'), primary_key=True),
+    Column('store_id', Integer, ForeignKey('store.id'), primary_key=True)
 )
 
-# Relation table between aliments and categories
-aliments_categories_relation = Table('aliments_categories', Base.metadata,
-    Column('aliment_id', Integer, ForeignKey('aliments.id')),
-    Column('category_id', Integer, ForeignKey('categories.id'))
+# Relation table between aliment and category
+aliment_category_relation = Table('aliment_category', Base.metadata,
+    Column('aliment_id', Integer, ForeignKey('aliment.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('category.id'), primary_key=True)
+)
+
+# Relation table between aliment and aliment.
+# (in order to memorize substitute of aliment).
+aliment_subtitute_relation = Table('aliment_substitute', Base.metadata,
+    Column('aliment_id', Integer, ForeignKey('aliment.id'), primary_key=True),
+    Column('substitute_id', Integer, ForeignKey('aliment.id'), primary_key=True)
 )
 
 class Aliment(Base):
-    __tablename__ = 'aliments'
+    __tablename__ = 'aliment'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
@@ -32,13 +39,22 @@ class Aliment(Base):
 
     stores = relationship(
         "Store",
-        secondary=aliments_stores_relation)
+        secondary=aliment_store_relation)
 
     categories = relationship(
         "Category",
-        secondary=aliments_categories_relation)
+        secondary=aliment_category_relation)
+
+    substitutes = relationship(
+        "Aliment",        
+        secondary=aliment_subtitute_relation,
+        primaryjoin=id==aliment_subtitute_relation.c.aliment_id,
+        secondaryjoin=id==aliment_subtitute_relation.c.substitute_id
+    )
+        # foreign_keys=["aliment_id"])
     
-    def __init__(self, name, description, code_bar, url, score, nova, brands, stores=[], categories=[]):
+    def __init__(self, name, description, code_bar, url, score, nova, brands,
+                stores=[], categories=[], substitutes=[]):
         self.name = name
         self.description = description
         self.code_bar = code_bar
@@ -48,26 +64,28 @@ class Aliment(Base):
         self.brands = brands
         self.stores = stores
         self.categories = categories
+        self.substitutes = substitutes
 
     def __repr__(self):
         return f"<Aliment(name={self.name}, url={self.url}, score= \
             {self.nutrition_score}, nova={self.nova_group}, \
-            stores={self.stores} categories={self.categories})>"
+            stores={self.stores} categories={self.categories}, \
+            substitutes={self.substitutes})>"
     
     def __eq__(self, aliment):
-        """Return True if the code bar of two aliments are equal."""
+        """Return True if the code bar of two aliment are equal."""
         return self.code_bar == aliment.code_bar
     
     def get_stores(self):
-        """Return a string of stores"""
-        if self.stores == None:
-            print('stores vide')
+        """Return a string of store with coma separator"""
+        if self.stores == None:            
             return ''
 
-        str_stores = ''
+        str_store = ''
         for store in self.stores:
-            str_stores += f'{store.name}, '
-        str_stores = str_stores[:-2]
+            str_store += f'{store.name}, '
+        # remove the last ', '
+        str_store = str_store[:-2]
 
-        return str_stores    
+        return str_store    
 

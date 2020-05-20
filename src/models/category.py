@@ -6,15 +6,15 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 class Category(Base):
-    __tablename__ = 'categories'
+    __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)    
     name = Column(String(100), nullable=False, unique=True)
 
     # aliments = relationship(
     #     "Aliment",
-    #     secondary=aliments_categories_relation,
-    #     back_populates="categories")
+    #     secondary=aliments_category_relation,
+    #     back_populates="category")
 
     def __init__(self, name):
         self.name = name    

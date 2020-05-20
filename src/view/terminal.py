@@ -1,7 +1,7 @@
 """This module constains the class Terminal in charge of input and output"""
 
 from os import name as os_name, system
-from random import choices
+from random import sample
 
 from colorama import init, Fore
 
@@ -28,7 +28,7 @@ class Terminal:
             choice = self._ask_choice(('1', '2', 'q'))
             # print(choice)
             if choice == 'q' or choice == 'Q':
-                cprint(' A bientôt.', 'green')
+                cprint('\n A bientôt.', 'green')
                 break
             elif choice == '1':
                 self._clear_console()
@@ -38,9 +38,11 @@ class Terminal:
                 category_choice = self._ask_choice(valid_choice)
                 if category_choice != 'q':
                     category = CATEGORIES[int(category_choice)-1]
-                    print('vous avez choisi', category)
+                    self._clear_console()
                     self._display_aliments(category)
-                break            
+                # break
+            elif choice == '2':
+                self._display_substitute()            
             
     
     def _clear_console(self):
@@ -91,11 +93,48 @@ class Terminal:
         print(Fore.CYAN + msg)
         print('')
 
+        # get 10 random aliments from this category
         all_aliments = self.db.get_aliments_from_category(category)
-        aliments = choices(all_aliments, k=10)
+        aliments = sample(all_aliments, k=10)
         
         i = 1
         for aliment in aliments:
             print(f' {i} = {aliment.name}, {aliment.nutrition_score}')
             i += 1
+
+        valid_choice = [str(choice) for choice in range(1,len(aliments)+1)]
+        valid_choice.extend(['q', 'Q'])
+
+        print('')
+        choice = self._ask_choice(valid_choice)
+        if choice.lower() == 'q':
+            return
+
+        aliment = aliments[int(choice)-1]
+        msg = (f"\n '{aliment.name}' de nutriscore {aliment.nutrition_score.upper()} peut "
+             "être substitué avantageusement par l'aliment suivant:")
+        print(Fore.LIGHTMAGENTA_EX + msg)
+
+        substitute = self.db.get_substitute(category)
+
+        msg = f""" Nom : {substitute.name}
+ Description : {substitute.description}
+ Nutriscore : {substitute.nutrition_score.upper()}
+ Magasins : {substitute.get_stores()}
+ Lien : {substitute.url}
+"""
+        print('')
+        print(msg)
+        print('')
+
+        msg = 'Voulez vous enregistrer cette substitution ? O/N : '
+        save = input(Fore.LIGHTGREEN_EX + msg)
+        if save.lower() == 'o':
+            self.db.save_substitute(aliment, substitute)
+            print('aliment sauvegardé')
+
+        input('Appuyez sur Entrée')
+        
+    def _display_substitute(self):
+        substitutes = self.db.get_saved_substitutes()
         
