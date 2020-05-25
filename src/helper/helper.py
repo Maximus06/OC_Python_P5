@@ -17,3 +17,19 @@ def cprint(message, color):
     color = color_dic.get(color, 'white')
     print(color + message + color_dic.get('white'))
 
+def progress_bar(percent=0, width=30):
+    """Emulate a progress bar
+
+        Args:
+            percent: Int for the progress percentage
+            width: Int width of the progress bar (default 30)
+    """
+
+    # The number of hashes to show is based on the percent passed in. The
+    # number of blanks is whatever space is left after.
+    hashes = width * percent // 100
+    blanks = width - hashes
+    print('\r[\x1b[1;37;47m', hashes*'#', blanks*' ', ']', f' {percent:.0f}%', sep='',
+        end='', flush=True)
+
+

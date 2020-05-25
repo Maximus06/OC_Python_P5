@@ -18,17 +18,20 @@ from ..models.category import Category
 class DataManager:
     """This class is in charge of CRUD operations with the DataBase"""
 
-    def __init__(self):
+    def __init__(self, reset=False):
         self.engine = create_engine('mysql://maximus:decimus@localhost/openfood')
         Session = sessionmaker(bind=self.engine)
         # create a new session
         self.session = Session()
 
         # create schema if necessary
-        self.create_tables()
+        if reset:
+            self.create_tables()
 
     def create_tables(self):
-        """Generate database schema"""        
+        """Generate database schema"""
+
+        Base.metadata.drop_all(self.engine)
         Base.metadata.create_all(self.engine)
     
     def create_categories(self, categories):
@@ -48,8 +51,7 @@ class DataManager:
     
     def save_stores(self, stores):
         # create a list of Store object from the store set
-        store_list = list(stores)
-        print(f'\nstore list: {store_list}')
+        store_list = list(stores)        
         
         obj_stores = [Store(store) for store in store_list]
         

@@ -4,6 +4,7 @@ from openfoodfact api
 from colorama import init
 
 import requests
+from time import sleep
 
 from ..settings import DATABASE, CATEGORIES, ALIMENT_BY_CATEGORY,\
                        DUMMY_PRODUCTS
@@ -11,12 +12,12 @@ from ..models.aliment import Aliment
 from ..models.store import Store
 from ..models.category import Category
 from .. data.datamanager import DataManager
+from ..helper.helper import progress_bar
 
 class Openfood:
     """This class is in charge of communication with the openfoodfacts api."""
 
-    def __init__(self, aliment_number=100):
-        # self.categories = CATEGORIES
+    def __init__(self, aliment_number=100):        
         self.aliment_number = aliment_number
         self.url = self._get_url()
         self.aliments = []
@@ -76,17 +77,28 @@ class Openfood:
         # list of aliments object for this category
         # aliments=[]
 
-        print(f'\nTraitement de la catégorie :\33[35m {category}\33[0m')    
+        print('\33[0m')
+        print(f'\nTraitement de la catégorie :\33[32m {str(category)}\33[0m')    
         products = food.get('products')
 
         # all_stores = set()
         
-        # parcours de la liste de dictionnaire d'aliments
+        i = 0
+        total = len(products)
+
+        # Loop the food dictionnary
         for product in products:
-            name = product.get('product_name')
+            i = i+1
+            percent = int(i / total * 100)
+            progress_bar(percent, 50)
+            # Sleep a little to enjoy this marvelous progress bar ^_^.
+            sleep(0.002)
+
+            # delete the return char to avoid uggly display
+            name = product.get('product_name').replace('\n', ' ') 
             code = product.get('code')
             description = product.get('generic_name')
-            print(f'name: {name} - description: {description}')
+            # print(f'name: {name} - description: {description}')
             if name in DUMMY_PRODUCTS:
             # ignore dummy products
                 continue
@@ -116,10 +128,10 @@ class Openfood:
             # brands = product.get('brands').encode('utf8')
             brands = product.get('brands')            
             if 'ė' in  brands:
-                print(f'BRAND avt replace = {brands}')
-                print(f"BRAND encoded = {brands.encode('utf8')}")
+                # print(f'BRAND avt replace = {brands}')
+                # print(f"BRAND encoded = {brands.encode('utf8')}")
                 brands = brands.replace('ė', 'é')
-                print('\33[31m' +'ė have been replaced' + '\33[0m')
+                # print('\33[31m' +'ė have been replaced' + '\33[0m')
             
             aliment = Aliment(name=name, description=description, score=score,
                 url=url, nova=nova, brands=brands, stores=list(stores_set),
@@ -183,7 +195,7 @@ def main():
     # for windows console color
     init()
 
-    db = DataManager()
+    db = DataManager(reset=True)
     api = Openfood(ALIMENT_BY_CATEGORY)
 
     # Create the categories in the database from the setting list

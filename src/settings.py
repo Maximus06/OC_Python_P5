@@ -1,3 +1,5 @@
+from colorama import Fore, Back
+
 """This file contains the setting parameters and contants"""
 
 # Parameters for the connection with the database
@@ -27,7 +29,15 @@ CATEGORIES = [
     ]
 
 # Number of aliment to get by category
-ALIMENT_BY_CATEGORY = 100
+ALIMENT_BY_CATEGORY = 250
+
+NUTRISCORE_COLOR = {
+    'a': Back.GREEN, 
+    'b': Back.LIGHTGREEN_EX, 
+    'c': Back.LIGHTYELLOW_EX + Fore.BLACK, 
+    'd': Back.RED, 
+    'e': Back.LIGHTRED_EX, 
+}
 
 # a list of products to ignore (based on product name)
 DUMMY_PRODUCTS = [

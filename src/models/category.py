@@ -21,3 +21,6 @@ class Category(Base):
 
     def __repr__(self):
         return f"<Category(name={self.name})>"
+
+    def __str__(self):
+        return self.name
