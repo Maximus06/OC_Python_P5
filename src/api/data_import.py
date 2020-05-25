@@ -55,8 +55,14 @@ class DataImport:
 
         # print('\33[0m')
         # print(f'\nTraitement de la catégorie :\33[32m {str(category)}\33[0m')
-        msg = '\nTraitement de la catégorie : '
-        print(msg + f'{Fore.MAGENTA} {str(category)} {Fore.RESET}')
+        print('')
+        msg = 'Traitement de la catégorie : '
+        cate_name = str(category)
+        print(msg + f'{Fore.MAGENTA} {cate_name} {Fore.RESET}')
+        
+        # for the len on the progress bar (-6 to align % with last letter)
+        len_msg = len(msg) + len(cate_name ) -6
+
         products = data.get('products')
 
         # all_stores = set()
@@ -68,7 +74,7 @@ class DataImport:
         for product in products:
             i = i+1
             percent = int(i / total * 100)
-            progress_bar(percent, 50)            
+            progress_bar(percent, len_msg)            
             # Sleep a little to enjoy this marvelous progress bar ^_^.
             sleep(0.002)
 
