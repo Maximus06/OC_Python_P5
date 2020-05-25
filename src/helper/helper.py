@@ -29,7 +29,7 @@ def progress_bar(percent=0, width=30):
     # number of blanks is whatever space is left after.
     hashes = width * percent // 100
     blanks = width - hashes
-    print('\r[\x1b[1;37;47m', hashes*'#', blanks*' ', ']', f' {percent:.0f}%', sep='',
+    print('\r[\x1b[1;34;47m', hashes*'#', blanks*' ', ']', f' {percent:.0f}%', sep='',
         end='', flush=True)
 
 

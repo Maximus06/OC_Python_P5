@@ -29,7 +29,7 @@ class DataManager:
             self.create_tables()
 
     def create_tables(self):
-        """Generate database schema"""
+        """Generate or regenerate database schema"""
 
         Base.metadata.drop_all(self.engine)
         Base.metadata.create_all(self.engine)
