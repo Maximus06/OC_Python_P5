@@ -32,4 +32,3 @@ def progress_bar(percent=0, width=30):
     print('\r[\x1b[1;34;47m', hashes*'#', blanks*' ', ']', f' {percent:.0f}%', sep='',
         end='', flush=True)
 
-

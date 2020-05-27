@@ -13,13 +13,14 @@ from ..models.base import Base
 from ..models.aliment import Aliment, aliment_subtitute_relation
 from ..models.store import Store
 from ..models.category import Category
-
+from ..settings import DATABASE as db
 
 class DataManager:
     """This class is in charge of CRUD operations with the DataBase"""
 
     def __init__(self, reset=False):
-        self.engine = create_engine('mysql://maximus:decimus@localhost/openfood')
+        # self.engine = create_engine('mysql://maximus:decimus@localhost/openfood')
+        self.engine = create_engine(self._get_connection())
         Session = sessionmaker(bind=self.engine)
         # create a new session
         self.session = Session()
@@ -27,6 +28,14 @@ class DataManager:
         # create schema if necessary
         if reset:
             self.create_tables()
+    
+    def _get_connection(self):
+        """Construct and return a string database connection."""
+
+        url = f"{db.get('dialect')}{db.get('user')}:{db.get('password')}" \
+              f"@{db.get('server')}/{db.get('base')}"
+        return url
+
 
     def create_tables(self):
         """Generate or regenerate database schema"""
