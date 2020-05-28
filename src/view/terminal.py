@@ -1,6 +1,7 @@
 """This module constains the class Terminal in charge of input and output"""
 
 from os import name as os_name, system
+from sys import exit
 from random import sample
 from webbrowser import open_new as open_browser
 
@@ -20,18 +21,20 @@ class Terminal:
 
     def run(self):
         """This method is the main loop of the application"""
+
         # for color in window console
         init(autoreset=True)
 
         while True:
             self._clear_console()
             self._main_menu()
+
             choice = self._ask_choice(('1', '2', 'q'))
-            # print(choice)
             if choice == 'q' or choice == 'Q':
                 cprint('\n A bientôt.', 'green')
                 break
             elif choice == '1':
+                # Choice replace a aliment
                 self._clear_console()
                 self._display_categories()
                 valid_choice = [str(choice) for choice in range(1,len(CATEGORIES)+1)]
@@ -40,9 +43,9 @@ class Terminal:
                 if category_choice != 'q':
                     category = CATEGORIES[int(category_choice)-1]
                     self._clear_console()
-                    self._display_aliments(category)
-                # break
+                    self._display_aliments(category)                
             elif choice == '2':
+                # Choice show substitut saved.
                 self._display_substitutes()
             
     
@@ -54,6 +57,7 @@ class Terminal:
             system('clear')
 
     def _main_menu(self):
+        """Display the main menu"""
         frame = "=" * 20
         msg = frame + " Bienvenue dans l'application Pur Beurre. " + frame
         cprint(msg, 'violet')
@@ -68,9 +72,12 @@ class Terminal:
         print(msg)
 
     def _ask_choice(self, valid_choice):
-        # print(valid_choice)
-        while True:
-            # answer = input(' \x1b[1;33;40mEntrez votre choix (Q pour quitter) \x1b[1;37;40m : ')            
+        """Return the choice done by the user
+
+            Args:
+                - valid_choice: List of allowed choice.
+        """
+        while True:            
             answer = input(Fore.LIGHTGREEN_EX + ' Entrez votre choix (Q pour quitter) : ')            
             if answer in valid_choice:
                 break
@@ -80,6 +87,8 @@ class Terminal:
         return answer
         
     def _display_categories(self):
+        """Display a list of categories associated to a number"""
+
         msg = '\n Veuillez choisir une catégorie et appuyez sur Entrée'
         print(Fore.CYAN + msg)
         print('')
@@ -90,13 +99,13 @@ class Terminal:
         print('')
 
     def _display_aliments(self, category):
-        """Display a list of 10 random aliment for the category given"""
+        """Display a list of 10 random aliments for the category given"""
 
         msg = '\n Veuillez choisir un aliment et appuyez sur Entrée'
         print(Fore.CYAN + msg)
         print('')
 
-        # get 10 random aliments from this category
+        # get 10 random aliments from this category        
         all_aliments = self.db.get_aliments_from_category(category)
         aliments = sample(all_aliments, k=10)
         
@@ -198,8 +207,8 @@ class Terminal:
             print(trait)
 
             print('')
-            msg = (' Entrez un numéro pour voir le détail de l\'aliment '
-                'remplacé et du substitut dans votre navigateur')
+            msg = (' Entrez un numéro pour voir le détail du substitut '
+                'dans votre navigateur')
 
             print(Fore.LIGHTCYAN_EX + msg)
 
@@ -213,8 +222,9 @@ class Terminal:
             aliment = records[int(choice)-1]
 
             # the replaced aliment url
-            url = aliment[6]            
-            open_browser(url)
+            # url = aliment[6]            
+            # open_browser(url)
+            
             # the substitut url
             url = aliment[7]            
             open_browser(url)

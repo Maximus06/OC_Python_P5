@@ -11,7 +11,7 @@ DATABASE = {
     'user': 'maximus',
     'password': 'decimus',
     'server': 'localhost',
-    'base': 'openfood',
+    'base': 'openfoo',
 }
 
 # The categories of food

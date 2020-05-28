@@ -54,9 +54,7 @@ class DataManager:
             self.session.commit()
         except IntegrityError:
             # categories already exist: so ignore the exception
-            self.session.rollback()
-            
-        
+            self.session.rollback()        
     
     def save_stores(self, stores):
         # create a list of Store object from the store set
