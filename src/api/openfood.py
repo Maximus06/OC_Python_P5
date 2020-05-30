@@ -23,12 +23,10 @@ class Openfood:
         return url_base + sort_by + record_number + file_format + fields + criteria_complete
 
     def get_data_by_category(self, category):
-        """Return a dictionnary of food
+        """Return a dictionnary of aliments for the arg category.
 
             Args:
-                - category: String name of the category
-            
-            Return a dictionnary of aliment
+                - category: String name of the category            
         """
 
         url_with_category = self.url + \
@@ -38,7 +36,7 @@ class Openfood:
 
         if result.ok == False:
             print(f"The error {result.reason} occurs with status code {result.status_code}")
-            #TODO raise error
+            # TODO: raise error
             return None
         
         food = result.json()

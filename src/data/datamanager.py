@@ -16,10 +16,21 @@ from ..models.category import Category
 from ..settings import DATABASE as db
 
 class DataManager:
-    """This class is in charge of CRUD operations with the DataBase"""
+    """This class is in charge of CRUD operations with the DataBase
+
+    Attributes:
+    - engine: an Engine instance from sqlAlchemy
+    - session: a session instance from sqlAlchemy
+    """
 
     def __init__(self, reset=False):
-        # self.engine = create_engine('mysql://maximus:decimus@localhost/openfood')
+        """Class constructor
+
+        Args:
+        - reset: this flag means create or re-create the shema. Warning:
+        all existing data will be lost.
+        """
+        
         self.engine = create_engine(self._get_connection())
         Session = sessionmaker(bind=self.engine)
         # create a new session
@@ -57,6 +68,8 @@ class DataManager:
             self.session.rollback()        
     
     def save_stores(self, stores):
+        """Create stores in the database from a set"""
+
         # create a list of Store object from the store set
         store_list = list(stores)        
         
@@ -66,7 +79,8 @@ class DataManager:
         self.session.commit()
 
     def save_food(self, aliments):
-        """This method"""
+        """Create the aliments in the database from a list of aliments"""
+
         # Replace the list of store string by a list of Store Object
         for aliment in aliments:
             obj_stores = []
@@ -84,27 +98,35 @@ class DataManager:
         self.session.close()
 
     def get_obj_category(self, name):    
-        """Return a Category object from the database"""    
+        """Return a Category object from the database
+        
+        Args:
+        - name: the name of the category (string)
+        """
+
         category = self.session.query(Category).filter(
             Category.name == name).first()
         return category
 
     def get_categories(self):    
-        """Return a list of categories object from the database"""    
+        """Return a list of categories object from the database"""
+
         categories = self.session.query(Category).all()
         return categories
 
     def get_obj_store(self, name):
-        """Return a Store object from the database"""
+        """Return a Store object from the database
+
+        Args:
+        - name: the name of the store (string)
+        """
+
         store = self.session.query(Store).filter(
             Store.name == name).first()
         return store
 
     def get_aliments_from_category(self, category):
-        """Return a list of Aliment from the arg category"""
-        
-        # aliments = self.session.query(Aliment).\
-        #     filter(Aliment.categories.any(name=category)).all()
+        """Return a list of Aliment from the arg category"""        
 
         aliments = self.session.query(Aliment).\
             filter(Aliment.categories.any(name=category)).\

@@ -1,6 +1,7 @@
+"""This file contains the setting parameters and contants"""
+
 from colorama import Fore, Back
 
-"""This file contains the setting parameters and contants"""
 
 # Parameters for the connection with the database
 # mysqlclient
@@ -11,7 +12,7 @@ DATABASE = {
     'user': 'maximus',
     'password': 'decimus',
     'server': 'localhost',
-    'base': 'openfoo',
+    'base': 'openfood',
 }
 
 # The categories of food

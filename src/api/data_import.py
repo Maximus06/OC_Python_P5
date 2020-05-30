@@ -1,6 +1,7 @@
 """This module contains the class responsible to get the records
 from openfoodfact api
 """
+
 from colorama import init, Fore, Back
 
 import requests
@@ -18,6 +19,11 @@ from ..helper.helper import progress_bar
 class DataImport:
     """This class imports data from the openfoodfacts api
     in the database.
+
+    attributes:
+    - api: the class in charge to get the data from openfoodfacts api
+    - aliments: a list of Aliment object
+    - stores: a set of Store object. 
     """
 
     def __init__(self, api):
@@ -34,11 +40,8 @@ class DataImport:
         """get food for each category in the categories list
         
         args:
-            - categories: list of Category objects            
+            - categories: list of Category objects
         """    
-
-        # all_stores = set()
-        # all_aliments = []
 
         for category in categories:
 
@@ -48,13 +51,8 @@ class DataImport:
         return self.aliments, self.stores
 
     def prepare_aliments_from_dico(self, data, category):
-        """Create a list of Aliment object from the dictionnary"""
+        """Create a list of Aliment object from the dictionnary data"""
 
-        # list of aliments object for this category
-        # aliments=[]
-
-        # print('\33[0m')
-        # print(f'\nTraitement de la catégorie :\33[32m {str(category)}\33[0m')
         print('')
         msg = 'Traitement de la catégorie : '
         cate_name = str(category)
@@ -63,9 +61,7 @@ class DataImport:
         # for the len on the progress bar (-6 to align % with last letter)
         len_msg = len(msg) + len(cate_name ) -6
 
-        products = data.get('products')
-
-        # all_stores = set()
+        products = data.get('products')        
         
         i = 0
         total = len(products)
@@ -102,20 +98,15 @@ class DataImport:
             
             if string:
                 stores_set = self._clean_stores(string)                
-                # cumul the stores for this aliment in the stores set for all
-                # all_stores = all_stores.union(stores_set)
+                # cumul the stores for this aliment in the stores set for all                
                 self.stores = self.stores.union(stores_set)
             
             # categories = [self.get_obj_category(category)]
-            categories = [category]
+            categories = [category]            
             
-            # brands = product.get('brands').encode('utf8')
             brands = product.get('brands')            
             if 'ė' in  brands:
-                # print(f'BRAND avt replace = {brands}')
-                # print(f"BRAND encoded = {brands.encode('utf8')}")
-                brands = brands.replace('ė', 'é')
-                # print('\33[31m' +'ė have been replaced' + '\33[0m')
+                brands = brands.replace('ė', 'é')                
             
             aliment = Aliment(name=name, description=description, score=score,
                 url=url, nova=nova, brands=brands, stores=list(stores_set),
@@ -136,7 +127,7 @@ class DataImport:
         return category
 
     def _clean_stores(self, string_stores):
-        """Return a set of store from a list with cleaned data:
+        """Return a set of store from a string with cleaned data:
             - Clean exotic caractere
             - clean space
             - Capitalize
@@ -178,6 +169,8 @@ class DataImport:
         return set_store
 
 def main():
+    """Launch the import in the database"""
+
     # for windows console color
     init()
 
