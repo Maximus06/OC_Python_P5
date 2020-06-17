@@ -14,7 +14,6 @@ from ..settings import (
     DUMMY_PRODUCTS,
 )
 from ..models.aliment import Aliment
-from ..models.category import Category
 from ..data.datamanager import DataManager
 from ..helper.helper import progress_bar
 
@@ -23,37 +22,49 @@ class DataImport:
     """This class imports data from the openfoodfacts api
     in the database.
 
-    attributes:
-    - api: the class in charge to get the data from openfoodfacts api
-    - aliments: a list of Aliment object
-    - stores: a set of Store object.
+    Attributes
+    ----------
+    _api: the class in charge to get the data from openfoodfacts api.
+    _aliments: a list of Aliment object.
+    _stores: a set of Store object.
+
+    Public methods
+    --------------
+    get_aliments_by_category : return a list of aliments and a set of stores
     """
 
     def __init__(self, api):
         """Init class attributs
+
             Args:
                 api: Openfood class in charge of communication
                 with openfoodfacts api
         """
-        self.api = api
-        self.aliments = []
-        self.stores = set()
+        self._api = api
+        self._aliments = []
+        self._stores = set()
 
-    def get_food_by_category(self, categories):
-        """get food for each category in the categories list
+    def get_aliments_by_category(self, categories):
+        """Get aliments for each category in the categories list
 
-        args:
+        Make a request for each category
+        Process the data to extract aliments dataset
+        Use the loop to extract the stores
+
+        Args:
             - categories: list of Category objects
+
+        Return : Aliment list, string set of stores
         """
 
         for category in categories:
 
-            data = self.api.get_data_by_category(category.name)
-            self.prepare_aliments_from_dico(data, category)
+            data = self._api.get_data_by_category(category.name)
+            self._prepare_aliments_from_dico(data, category)
 
-        return self.aliments, self.stores
+        return self._aliments, self._stores
 
-    def prepare_aliments_from_dico(self, data, category):
+    def _prepare_aliments_from_dico(self, data, category):
         """Create a list of Aliment object from the dictionnary data
 
         Args:
@@ -83,8 +94,8 @@ class DataImport:
             sleep(0.001)
 
             aliment = self._get_aliment(product, category)
-            if (aliment is not None) and (aliment not in self.aliments):
-                self.aliments.append(aliment)
+            if (aliment is not None) and (aliment not in self._aliments):
+                self._aliments.append(aliment)
 
         # reset color
         print('\33[0m')
@@ -123,7 +134,7 @@ class DataImport:
         if the_stores:
             stores_set = self._clean_stores(the_stores)
             # cumul the stores for this aliment in the stores set for all
-            self.stores = self.stores.union(stores_set)
+            self._stores = self._stores.union(stores_set)
 
         categories = [category]
 
@@ -145,24 +156,17 @@ class DataImport:
 
         return aliment
 
-    def get_obj_category(self, name):
-        """Return a Category object from the database
-
-        Args:
-        - name: String name of the category
-        """
-        category = (
-            self.session.query(Category).filter(Category.name == name).first()
-        )
-
-        return category
-
     def _clean_stores(self, string_stores):
-        """Return a set of store from a string with cleaned data:
+        """Return a set from a string with cleaned data:
             - Clean exotic caractere
             - clean space
             - Capitalize
             - clean doublon
+
+        Args:
+        string_stores: a string of store (can be with comma separation)
+
+        Return: set of string stores
         """
 
         # A strange caractere 'ė' (Intermachė) crash sqlAlchemy
@@ -226,7 +230,7 @@ def main():
         Fore.CYAN + '\nLancement de la récupération des données' + Fore.RESET
     )
     # Get the aliments and stores from the api
-    aliments, stores = data_import.get_food_by_category(categories)
+    aliments, stores = data_import.get_aliments_by_category(categories)
 
     # Save stores and aliments in the database
     db.save_stores(stores)

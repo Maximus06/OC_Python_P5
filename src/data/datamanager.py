@@ -18,11 +18,20 @@ class DataManager:
 
     Attributes:
     - engine: an Engine instance from sqlAlchemy
-    - session: a session instance from sqlAlchemy
+    - session: a Session instance from sqlAlchemy
+
+    Public methods:
+    - create_tables: create the tables for the database
+    - create_categories: create the categories from the setting.
+    - save_stores: save the stores in the database
+    - save_food: save the aliments in the database
+    - save_substitute: save a substitute aliment in the database.
+    - get_aliments_from_category: return a list of aliments from a category.
+    - get_substitute: return a substitute for a aliment.
     """
 
     def __init__(self, reset=False):
-        """Class constructor
+        """Init the attribut of the class
 
         Args:
         - reset: this flag means create or re-create the shema. Warning:
@@ -38,15 +47,6 @@ class DataManager:
         if reset:
             self.create_tables()
 
-    def _get_connection(self):
-        """Construct and return a string database connection."""
-
-        url = (
-            f"{db.get('dialect')}{db.get('user')}:{db.get('password')}"
-            f"@{db.get('server')}/{db.get('base')}"
-        )
-        return url
-
     def create_tables(self):
         """Generate or regenerate database schema"""
 
@@ -54,7 +54,12 @@ class DataManager:
         Base.metadata.create_all(self.engine)
 
     def create_categories(self, categories):
-        """create the categories in the database from a list of category"""
+        """create the categories in the database from a list of category
+
+        Args:
+        categories: list of string
+        names of the categories
+        """
 
         # create a list of Category object from the category list
         obj_categories = [Category(cate) for cate in categories]
@@ -63,22 +68,28 @@ class DataManager:
         try:
             self.session.commit()
         except IntegrityError:
-            # categories already exist: so ignore the exception
             self.session.rollback()
 
     def save_stores(self, stores):
-        """Create stores in the database from a set"""
+        """Create stores in the database from a set
+
+        Args:
+        stores: set of string stores
+        """
 
         # create a list of Store object from the store set
         store_list = list(stores)
-
         obj_stores = [Store(store) for store in store_list]
 
         self.session.add_all(obj_stores)
         self.session.commit()
 
     def save_food(self, aliments):
-        """Create the aliments in the database from a list of aliments"""
+        """Create the aliments in the database from a list of aliments
+
+        Args:
+        - aliments: the list of Aliment to save (List of Aliment)
+        """
 
         # Replace the list of store string by a list of Store Object
         for aliment in aliments:
@@ -95,6 +106,15 @@ class DataManager:
         self.session.add_all(aliments)
         self.session.commit()
         self.session.close()
+
+    def _get_connection(self):
+        """Construct and return a string database connection."""
+
+        url = (
+            f"{db.get('dialect')}{db.get('user')}:{db.get('password')}"
+            f"@{db.get('server')}/{db.get('base')}"
+        )
+        return url
 
     def get_obj_category(self, name):
         """Return a Category object from the database
@@ -150,9 +170,7 @@ class DataManager:
             .filter(Aliment.nutrition_score == 'a')
             .all()
         )
-
-        print(f'\nNombre de substition possible de score A: {len(aliments)}')
-
+        # Choose a random aliment
         substitut = choice(aliments)
 
         return substitut

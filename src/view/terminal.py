@@ -12,11 +12,24 @@ from ..settings import CATEGORIES, NUTRISCORE_COLOR
 
 
 class Terminal:
-    """This class manage the communication with the user"""
+    """This class manage the communication with the user
+
+    Attributes
+    ----------
+    _db: DataManager
+    the class responsible to communicate with the database
+    _os_type : str
+    the type of the user os
+
+    Public Methods
+    --------------
+    run : launch the main loop of the application.
+    """
 
     def __init__(self):
-        self.db = DataManager()
-        self.os_type = os_name
+        """Init the attribute of the class"""
+        self._db = DataManager()
+        self._os_type = os_name
 
     def run(self):
         """This method is the main loop of the application"""
@@ -51,7 +64,7 @@ class Terminal:
 
     def _clear_console(self):
         """This method clear the console"""
-        if self.os_type == 'nt':
+        if self._os_type == 'nt':
             system('cls')
         else:
             system('clear')
@@ -102,14 +115,18 @@ class Terminal:
         print('')
 
     def _display_aliments(self, category):
-        """Display a list of 10 random aliments for the category given"""
+        """Display a list of 10 random aliments for the category given
+
+        Args:
+        categogy : name of the category (str)
+        """
 
         msg = '\n Veuillez choisir un aliment et appuyez sur Entrée'
         print(Fore.CYAN + msg)
         print('')
 
         # get 10 random aliments from this category
-        all_aliments = self.db.get_aliments_from_category(category)
+        all_aliments = self._db.get_aliments_from_category(category)
         aliments = sample(all_aliments, k=10)
 
         i = 1
@@ -141,7 +158,7 @@ class Terminal:
         )
         print(Fore.LIGHTCYAN_EX + msg)
 
-        substitute = self.db.get_substitute(category)
+        substitute = self._db.get_substitute(category)
 
         msg = f""" Nom : {substitute.name}
  Description : {substitute.description}
@@ -156,7 +173,7 @@ class Terminal:
         msg = ' Voulez vous enregistrer cette substitution ? O/N : '
         save = input(Fore.LIGHTGREEN_EX + msg)
         if save.lower() == 'o':
-            self.db.save_substitute(aliment, substitute)
+            self._db.save_substitute(aliment, substitute)
             print(Fore.LIGHTCYAN_EX + '\n Substitut sauvegardé')
             input(
                 Fore.LIGHTCYAN_EX
@@ -168,7 +185,7 @@ class Terminal:
 
         self._clear_console()
 
-        substitutes = self.db.get_saved_substitutes()
+        substitutes = self._db.get_saved_substitutes()
         total_sub = substitutes.rowcount
         if total_sub == 0:
             print(Fore.YELLOW + ' Aucun substitut enregistré n\'a été trouvé')
@@ -262,12 +279,3 @@ class Terminal:
 
         color = NUTRISCORE_COLOR.get(nutriscore)
         return f'{color} {nutriscore.upper()} {Back.RESET + Fore.RESET}'
-
-
-if __name__ == '__main__':
-    init(autoreset=True)
-    t = Terminal()
-    A = t.get_nutriscore_colored('a')
-    B = t.get_nutriscore_colored('b')
-    print(A)
-    print(B)

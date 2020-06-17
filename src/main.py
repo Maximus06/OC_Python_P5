@@ -9,6 +9,8 @@ from .view.terminal import Terminal
 
 
 def main():
+    """This function launch the application"""
+
     app = Terminal()
 
     try:

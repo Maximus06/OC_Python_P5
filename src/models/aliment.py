@@ -37,6 +37,8 @@ aliment_subtitute_relation = Table(
 
 
 class Aliment(Base):
+    """Represents an aliment"""
+
     __tablename__ = 'aliment'
 
     id = Column(Integer, primary_key=True)
@@ -85,6 +87,7 @@ class Aliment(Base):
         self.substitutes = substitutes
 
     def __repr__(self):
+        """Return a string representing the class"""
         return f"<Aliment(name={self.name}, url={self.url}, score= \
             {self.nutrition_score}, nova={self.nova_group}, \
             stores={self.stores} categories={self.categories}, \
