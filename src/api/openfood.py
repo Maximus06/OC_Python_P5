@@ -2,6 +2,7 @@
 
 import requests
 
+
 class Openfood:
     """This class is in charge of communication with the openfoodfacts api."""
 
@@ -18,28 +19,40 @@ class Openfood:
         file_format = "&json=true"
         fields = "&fields=product_name,stores,nutrition_grade_fr,url,code,nova_group, \
             stores_tag,brands,generic_name"
-        criteria_complete = "&tagtype_0=states&tag_contains_0=contains&tag_0=complete"
+        criteria_complete = (
+            "&tagtype_0=states&tag_contains_0=contains&tag_0=complete"
+        )
 
-        return url_base + sort_by + record_number + file_format + fields + criteria_complete
+        return (
+            url_base
+            + sort_by
+            + record_number
+            + file_format
+            + fields
+            + criteria_complete
+        )
 
     def get_data_by_category(self, category):
         """Return a dictionnary of aliments for the arg category.
 
             Args:
-                - category: String name of the category            
+                - category: String name of the category
         """
 
-        url_with_category = self.url + \
-                f"&tagtype_1=categories&tag_contains_1=contains&tag_1={category}"
+        url_with_category = (
+            self.url
+            + f"&tagtype_1=categories&tag_contains_1=contains&tag_1={category}"
+        )
 
         result = requests.get(url_with_category)
 
-        if result.ok == False:
-            print(f"The error {result.reason} occurs with status code {result.status_code}")
+        if not result.ok:
+            print(
+                f"The error {result.reason} occurs with status code "
+                f"{result.status_code}"
+            )
             # TODO: raise error
             return None
-        
+
         food = result.json()
         return food
-
-

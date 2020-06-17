@@ -1,9 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+"""This module contains the base class from sqlAlchemy for declarative base
+definition (schema creation).
+"""
 
-# TODO: refactor create url from settings and adapt in datamanager
-engine = create_engine('mysql://maximus:decimus@localhost/openfood')
-Session = sessionmaker(bind=engine)
+from sqlalchemy.ext.declarative import declarative_base
+
 
 Base = declarative_base()

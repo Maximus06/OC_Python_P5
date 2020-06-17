@@ -16,11 +16,13 @@ def main():
     except OperationalError:
         msg = "L'application n'a pas pu se connecter à la base de données."
         print(Fore.RED + msg)
-        msg = "Veuillez vérifier les informations dans le dictionnaire " \
+        msg = (
+            "Veuillez vérifier les informations dans le dictionnaire "
             "DATABASE du fichier setting.py"
+        )
         print(Fore.RED + msg)
-        
-        exit()
+
+        exit(1)
 
 
 if __name__ == "__main__":

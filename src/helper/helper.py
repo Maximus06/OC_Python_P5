@@ -12,10 +12,12 @@ color_dic = {
     'orange': '\x1b[1;33;40m',
 }
 
+
 def cprint(message, color):
     """Print a message in the color wanted"""
     color = color_dic.get(color, 'white')
     print(color + message + color_dic.get('white'))
+
 
 def progress_bar(percent=0, width=30):
     """Emulate a progress bar
@@ -29,6 +31,13 @@ def progress_bar(percent=0, width=30):
     # The number of blanks is whatever space is left after.
     hashes = width * percent // 100
     blanks = width - hashes
-    print('\r[\x1b[1;34;47m', hashes*'#', blanks*' ', ']', f' {percent:.0f}%', sep='',
-        end='', flush=True)
-
+    print(
+        '\r[\x1b[1;34;47m',
+        hashes * '#',
+        blanks * ' ',
+        ']',
+        f' {percent:.0f}%',
+        sep='',
+        end='',
+        flush=True,
+    )

@@ -1,7 +1,6 @@
 """This module constains the class Terminal in charge of input and output"""
 
 from os import name as os_name, system
-from sys import exit
 from random import sample
 from webbrowser import open_new as open_browser
 
@@ -37,18 +36,19 @@ class Terminal:
                 # Choice replace a aliment
                 self._clear_console()
                 self._display_categories()
-                valid_choice = [str(choice) for choice in range(1,len(CATEGORIES)+1)]
+                valid_choice = [
+                    str(choice) for choice in range(1, len(CATEGORIES) + 1)
+                ]
                 valid_choice.append('q')
                 category_choice = self._ask_choice(valid_choice)
                 if category_choice != 'q':
-                    category = CATEGORIES[int(category_choice)-1]
+                    category = CATEGORIES[int(category_choice) - 1]
                     self._clear_console()
-                    self._display_aliments(category)                
+                    self._display_aliments(category)
             elif choice == '2':
                 # Choice show substitut saved.
                 self._display_substitutes()
-            
-    
+
     def _clear_console(self):
         """This method clear the console"""
         if self.os_type == 'nt':
@@ -62,13 +62,14 @@ class Terminal:
         msg = frame + " Bienvenue dans l'application Pur Beurre. " + frame
         cprint(msg, 'violet')
 
-        msg = '\n Veuillez choisir une option et appuyez sur Entrée.'        
-        print(Fore.LIGHTCYAN_EX + msg)        
+        msg = '\n Veuillez choisir une option et appuyez sur Entrée.'
+        print(Fore.LIGHTCYAN_EX + msg)
         print('')
 
-        msg = """ 1 = Choisir un aliment à remplacer.
- 2 = Retrouver mes aliments substitués. 
-        """
+        msg = (
+            " 1 = Choisir un aliment à remplacer. \n"
+            " 2 = Retrouver mes aliments substitués.\n"
+        )
         print(msg)
 
     def _ask_choice(self, valid_choice):
@@ -77,15 +78,17 @@ class Terminal:
             Args:
                 - valid_choice: List of allowed choice.
         """
-        while True:            
-            answer = input(Fore.LIGHTGREEN_EX + ' Entrez votre choix (Q pour quitter) : ')            
+        while True:
+            answer = input(
+                Fore.LIGHTGREEN_EX + ' Entrez votre choix (Q pour quitter) : '
+            )
             if answer in valid_choice:
                 break
             else:
-                cprint(" Ce choix n'est pas une option valide", 'red')            
-                
+                cprint(" Ce choix n'est pas une option valide", 'red')
+
         return answer
-        
+
     def _display_categories(self):
         """Display a list of categories associated to a number"""
 
@@ -93,7 +96,7 @@ class Terminal:
         print(Fore.CYAN + msg)
         print('')
         i = 1
-        for category in CATEGORIES:            
+        for category in CATEGORIES:
             print(f' {i} = {category}')
             i += 1
         print('')
@@ -105,20 +108,22 @@ class Terminal:
         print(Fore.CYAN + msg)
         print('')
 
-        # get 10 random aliments from this category        
+        # get 10 random aliments from this category
         all_aliments = self.db.get_aliments_from_category(category)
         aliments = sample(all_aliments, k=10)
-        
+
         i = 1
         for aliment in aliments:
-            colored_score = self.get_nutriscore_colored(aliment.nutrition_score)
+            colored_score = self.get_nutriscore_colored(
+                aliment.nutrition_score
+            )
             name = aliment.name.replace('\n', ' ')
             msg = f' {i} = {name} (nutriscore : {colored_score})'
-                
+
             print(msg)
             i += 1
 
-        valid_choice = [str(choice) for choice in range(1,len(aliments)+1)]
+        valid_choice = [str(choice) for choice in range(1, len(aliments) + 1)]
         valid_choice.extend(['q', 'Q'])
 
         print('')
@@ -128,9 +133,12 @@ class Terminal:
 
         self._clear_console()
 
-        aliment = aliments[int(choice)-1]
-        msg = (f"\n '{aliment.name}' de nutriscore {aliment.nutrition_score.upper()} peut "
-             "être substitué avantageusement par l'aliment suivant:")
+        aliment = aliments[int(choice) - 1]
+        msg = (
+            f"\n '{aliment.name}' de nutriscore "
+            f"{aliment.nutrition_score.upper()} peut "
+            "être substitué avantageusement par l'aliment suivant:"
+        )
         print(Fore.LIGHTCYAN_EX + msg)
 
         substitute = self.db.get_substitute(category)
@@ -150,8 +158,11 @@ class Terminal:
         if save.lower() == 'o':
             self.db.save_substitute(aliment, substitute)
             print(Fore.LIGHTCYAN_EX + '\n Substitut sauvegardé')
-            input(Fore.LIGHTCYAN_EX + '\n Appuyez sur Entrée pour revenir au menu')
-        
+            input(
+                Fore.LIGHTCYAN_EX
+                + '\n Appuyez sur Entrée pour revenir au menu'
+            )
+
     def _display_substitutes(self):
         """This method display the substitutes already saved"""
 
@@ -160,19 +171,23 @@ class Terminal:
         substitutes = self.db.get_saved_substitutes()
         total_sub = substitutes.rowcount
         if total_sub == 0:
-            print(Fore.YELLOW +  ' Aucun substitut enregistré n\'a été trouvé')
+            print(Fore.YELLOW + ' Aucun substitut enregistré n\'a été trouvé')
             print('')
-            input(Fore.LIGHTCYAN_EX + ' Appuyez sur Entrée pour revenir au menu')
+            input(
+                Fore.LIGHTCYAN_EX + ' Appuyez sur Entrée pour revenir au menu'
+            )
             return None
 
         records = substitutes.fetchall()
-        
+
         while True:
             self._clear_console()
 
             print('')
-            msg = ("Liste des aliments que vous avez déjà remplacés avec leurs" 
-                f" substituts. Total : {total_sub}")
+            msg = (
+                "Liste des aliments que vous avez déjà remplacés avec leurs"
+                f" substituts. Total : {total_sub}"
+            )
 
             print(Fore.MAGENTA + msg)
             print('')
@@ -185,7 +200,15 @@ class Terminal:
             trait = '-' * 138
             print(trait)
             align_text = "|{:^4}| {:^50} | {:^10} | {:^50} | {:^10} |"
-            print(align_text.format('N°', 'Aliments remplacés','NutriScore','substituts', 'NutriScore'))
+            print(
+                align_text.format(
+                    'N°',
+                    'Aliments remplacés',
+                    'NutriScore',
+                    'substituts',
+                    'NutriScore',
+                )
+            )
             print(trait)
 
             i = 1
@@ -200,15 +223,20 @@ class Terminal:
                 score_sub = self.get_nutriscore_colored(sub[5])
 
                 # print(len(aliment))
-                record = f"|{i:^4}| {aliment:<50} |    {score_alim:^5}     | {substitute:<50} |    {score_sub:^5}     |"
+                record = (
+                    f"|{i:^4}| {aliment:<50} |    {score_alim:^5}     | "
+                    f"{substitute:<50} |    {score_sub:^5}     |"
+                )
                 print(record)
-                i = i+1
+                i = i + 1
 
             print(trait)
 
             print('')
-            msg = (' Entrez un numéro pour voir le détail du substitut '
-                'dans votre navigateur')
+            msg = (
+                ' Entrez un numéro pour voir le détail du substitut '
+                'dans votre navigateur'
+            )
 
             print(Fore.LIGHTCYAN_EX + msg)
 
@@ -216,17 +244,17 @@ class Terminal:
             valid_choice.append('q')
 
             choice = self._ask_choice(valid_choice)
-            if choice == 'q' or choice == 'Q':                
+            if choice == 'q' or choice == 'Q':
                 break
 
-            aliment = records[int(choice)-1]
+            aliment = records[int(choice) - 1]
 
             # the replaced aliment url
-            # url = aliment[6]            
+            # url = aliment[6]
             # open_browser(url)
-            
+
             # the substitut url
-            url = aliment[7]            
+            url = aliment[7]
             open_browser(url)
 
     def get_nutriscore_colored(self, nutriscore):
@@ -235,6 +263,7 @@ class Terminal:
         color = NUTRISCORE_COLOR.get(nutriscore)
         return f'{color} {nutriscore.upper()} {Back.RESET + Fore.RESET}'
 
+
 if __name__ == '__main__':
     init(autoreset=True)
     t = Terminal()
@@ -242,8 +271,3 @@ if __name__ == '__main__':
     B = t.get_nutriscore_colored('b')
     print(A)
     print(B)
-    
-
-
-            
-        
